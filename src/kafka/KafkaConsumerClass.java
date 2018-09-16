@@ -1,5 +1,5 @@
 
-package Kafka;
+package kafka;
 
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -7,12 +7,13 @@ import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Properties;
 
 public class KafkaConsumerClass 
 {
     private final static String TOPIC = "car-data";
-    //ip:posrt of the server to which we connect 
+    //ip:port of the server to which we connect 
     private final static String BOOTSTRAP_SERVERS ="localhost:9092";
     
     private static Consumer<Long, String> createConsumer() 
@@ -30,13 +31,14 @@ public class KafkaConsumerClass
       return consumer;
     }
     
-    static void runConsumer() throws InterruptedException 
+    
+    private static void runConsumer() throws InterruptedException 
     {
         final Consumer<Long, String> consumer = createConsumer();
         final int giveUp = 100;   int noRecordsCount = 0;
         while (true) 
         {
-            //poll => fetches the un committed records
+            //poll => fetches the un committed records timeouts after 1000 ms
             final ConsumerRecords<Long, String> consumerRecords = consumer.poll(1000);
             if (consumerRecords.count()==0) 
             {
@@ -49,7 +51,10 @@ public class KafkaConsumerClass
             
             consumerRecords.forEach(record -> 
             {
-                System.out.printf("Consumer Record:(%d, %s, %d, %d)\n",record.key(), record.value(),record.partition(), record.offset());
+                System.out.printf("Consumer Record:( %s)\n" , record.value());
+                HashMap<String,String> tripInfo  = new HashMap<>();
+                tripInfo = getInfo(record);
+                updateFields(tripInfo);
             });
             
             // to mark the list of received records before failure  ....so the next poll fetches the un committed records
@@ -57,6 +62,24 @@ public class KafkaConsumerClass
         }
         consumer.close();
         System.out.println("DONE");
+    }
+    
+    private static HashMap<String,String> getInfo(ConsumerRecord record)
+    {
+        HashMap<String,String> tripInfo  = new HashMap<>();
+        
+        
+        
+        return tripInfo;
+    }
+    
+    private static void updateFields(HashMap<String, String> tripInfo) 
+    {
+        //if tripID == trip3
+        
+        //else if tripID == trip4
+        
+        //else tripID == trip5
     }
     
     public static void main(String... args) throws Exception 

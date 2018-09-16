@@ -1,10 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package javafxapplication4;
 
+import com.google.gson.Gson;
+import java.util.Collections;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
@@ -16,137 +17,329 @@ import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.LongDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import structures.ConsumerThread;
+import pojos.KafkaRecord;
 
 
-/**
- *
- * @author user
- */
+
 public class CarsDashboard extends Application 
 {
+    //UI constants
     private static int carReadingsGap = 30;
-    private static int carReadingsX = 1030;
+    private static int readingX = 1030;
     private static int betCarsGap = 50;  
     private static int carsTitleX = 1020;
+    
+    ObservableList childrenList;
+   
+    //legend
+    Line line;
+    Text cars;
+    
+    //car1 Fields
+    Text car1;
+    Text velocity1;
+    Text fuel1;
+    private static Text velocityValue1;
+    private static Text fuelValue1;
+    
+    //car2 fields
+    Text car2;
+    Text velocity2;
+    Text fuel2;
+    private static Text velocityValue2;
+    private static Text fuelValue2;
+    
+    //car3 fields
+    Text car3;
+    Text velocity3;
+    Text fuel3;
+    private static Text velocityValue3;
+    private static Text fuelValue3;
     
     
     @Override
     //called once
     public void start(Stage primaryStage) 
     {
-        //1- create child nodes(e.g. line, text, ...) to be displayed
-        //2- create root node and add objects to it(children list)
+        //1- create root node(children list) and add objects(children) to it
+        //2- create children nodes(e.g. line, text, ...) to be displayed cara info , car2 info , car3 info
         //3- create scene and add root to it
         //4- add scene to the stage
         
         
         //1-
-        Line line = new Line();
-        line.setStartX(1000.0);
-        line.setEndX(1000.0); 
-        line.setStartY(0.0); 
-        line.setEndY(700.0);
-        
-        
-        Text cars = new Text();
-        cars.setFont(Font.font("times new roman",FontWeight.BOLD, FontPosture.ITALIC, 30));
-        cars.setX(1010);
-        cars.setY(30);
-        cars.setText("Cars");
-        
-        
-        Text car1 = new Text();
-        car1.setFont(Font.font("times new roman",FontWeight.BOLD, FontPosture.ITALIC, 25));
-        car1.setX(carsTitleX);
-        car1.setY(100);
-        car1.setText("Car 1");
-        
-        Text carVelocity1 = new Text();
-        carVelocity1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
-        carVelocity1.setX(carReadingsX);
-        carVelocity1.setY(100+carReadingsGap);
-        carVelocity1.setText("Speed:- ");
-        
-        Text carFuel1 = new Text();
-        carFuel1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
-        carFuel1.setX(carReadingsX);
-        carFuel1.setY(100+2*carReadingsGap);
-        carFuel1.setText("Fuel:- ");
-        
-        
-        Text car2 = new Text();
-        car2.setFont(Font.font("times new roman",FontWeight.BOLD, FontPosture.ITALIC, 25));
-        car2.setX(carsTitleX);
-        car2.setY(250);
-        car2.setText("Car 1");
-        car2.setFill(Color.LIGHTBLUE);
-        
-        Text carVelocity2 = new Text();
-        carVelocity2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
-        carVelocity2.setX(carReadingsX);
-        carVelocity2.setY(250+carReadingsGap);
-        carVelocity2.setText("Speed:- ");
-        carVelocity2.setFill(Color.LIGHTBLUE);
-        
-        Text carFuel2 = new Text();
-        carFuel2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
-        carFuel2.setX(carReadingsX);
-        carFuel2.setY(250+2*carReadingsGap);
-        carFuel2.setText("Fuel:- ");
-        carFuel2.setFill(Color.LIGHTBLUE);
-        
-        
-        
-        Text car3 = new Text();
-        car3.setFont(Font.font("times new roman",FontWeight.BOLD, FontPosture.ITALIC, 25));
-        car3.setX(carsTitleX);
-        car3.setY(400);
-        car3.setText("Car 1");
-        car3.setFill(Color.LIGHTCORAL);
-        
-        Text carVelocity3 = new Text();
-        carVelocity3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
-        carVelocity3.setX(carReadingsX);
-        carVelocity3.setY(400+carReadingsGap);
-        carVelocity3.setText("Speed:- ");
-        carVelocity3.setFill(Color.LIGHTCORAL);
-        
-        Text carFuel3 = new Text();
-        carFuel3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
-        carFuel3.setX(carReadingsX);
-        carFuel3.setY(400+2*carReadingsGap);
-        carFuel3.setText("Fuel:- ");
-        carFuel3.setFill(Color.LIGHTCORAL);
-        
-        
+        Group root = new Group();
+        childrenList = root.getChildren();
         
         //2-
-        Group root = new Group();
-        ObservableList childrenList = root.getChildren();
-        childrenList.add(line);
-        childrenList.add(cars);
-        childrenList.add(car1);
-        childrenList.add(carVelocity1);
-        childrenList.add(carFuel1);
-        childrenList.add(car2);
-        childrenList.add(carVelocity2);
-        childrenList.add(carFuel2);
-        childrenList.add(car3);
-        childrenList.add(carVelocity3);
-        childrenList.add(carFuel3);
+        
+        //setting info must come after creating and initializing children list
+        //because we are adding items to the children list and it shouldn't be null
+        setLegend();
+        
+        
+        //create another thread that is responsible for getting records and updating UI
+        ConsumerThread consumerThread = new ConsumerThread();
+        consumerThread.start();
         
         //3-
         Scene scene = new Scene(root,1200,700);
         
         //4-
-        primaryStage.setTitle("Sample application"); 
+        primaryStage.setTitle("Cars Dashboard"); 
         primaryStage.setScene(scene); 
         primaryStage.show();   
     }
 
     
-    public static void main(String[] args) {
+    public static void main(String[] args) 
+    {
         launch(args);
+        try 
+        {
+            runConsumer();
+        } 
+        catch (InterruptedException ex) 
+        {
+            System.err.println("Cars Dashboard: error in running Consumer, error is "+ex);
+        }
+    }
+    
+    private void setLegend() 
+    {
+        line = new Line();
+        line.setStartX(1000.0);
+        line.setEndX(1000.0); 
+        line.setStartY(0.0); 
+        line.setEndY(700.0);
+        childrenList.add(line);
+        
+        cars = new Text();
+        cars.setFont(Font.font("times new roman",FontWeight.BOLD, FontPosture.ITALIC, 30));
+        cars.setX(1010);
+        cars.setY(30);
+        cars.setText("Cars");
+        childrenList.add(cars);
+        
+        
+        setCarInfo1();
+        setCarInfo2();
+        setCarInfo3();
+    }
+        
+    private void setCarInfo1()
+    {
+        car1 = new Text();
+        car1.setFont(Font.font("times new roman",FontWeight.BOLD, FontPosture.ITALIC, 25));
+        car1.setX(carsTitleX);
+        car1.setY(100);
+        car1.setText("Car 1");
+        childrenList.add(car1);
+        
+        velocity1 = new Text();
+        velocity1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        velocity1.setX(readingX);
+        velocity1.setY(100+carReadingsGap);
+        velocity1.setText("Speed:- ");
+        childrenList.add(velocity1);
+        
+        velocityValue1= new Text("hello");
+        velocityValue1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        velocityValue1.setX(readingX+80);
+        velocityValue1.setY(100+carReadingsGap);
+        childrenList.add(velocityValue1);
+        
+        fuel1 = new Text();
+        fuel1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        fuel1.setX(readingX);
+        fuel1.setY(100+2*carReadingsGap);
+        fuel1.setText("Fuel:- ");
+        childrenList.add(fuel1);
+        
+        fuelValue1 = new Text("hello");
+        fuelValue1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        fuelValue1.setX(readingX+80);
+        fuelValue1.setY(100+2*carReadingsGap);
+        childrenList.add(fuelValue1);
+    }
+    
+    private void setCarInfo2()
+    {
+        car2 = new Text();
+        car2.setFont(Font.font("times new roman",FontWeight.BOLD, FontPosture.ITALIC, 25));
+        car2.setX(carsTitleX);
+        car2.setY(250);
+        car2.setText("Car 2");
+        car2.setFill(Color.LIGHTBLUE);
+        childrenList.add(car2);
+        
+        velocity2 = new Text();
+        velocity2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        velocity2.setX(readingX);
+        velocity2.setY(250+carReadingsGap);
+        velocity2.setText("Speed:- ");
+        velocity2.setFill(Color.LIGHTBLUE);        
+        childrenList.add(velocity2);
+        
+        velocityValue2= new Text("hello");
+        velocityValue2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        velocityValue2.setX(readingX+80);
+        velocityValue2.setY(250+carReadingsGap);
+        childrenList.add(velocityValue2);
+        
+        fuel2 = new Text();
+        fuel2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        fuel2.setX(readingX);
+        fuel2.setY(250+2*carReadingsGap);
+        fuel2.setText("Fuel:- ");
+        fuel2.setFill(Color.LIGHTBLUE);
+        childrenList.add(fuel2);
+        
+        fuelValue2= new Text("hello");
+        fuelValue2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        fuelValue2.setX(readingX+80);
+        fuelValue2.setY(250+2*carReadingsGap);
+        childrenList.add(fuelValue2);
+    }
+    
+    private void setCarInfo3()
+    {
+        car3 = new Text();
+        car3.setFont(Font.font("times new roman",FontWeight.BOLD, FontPosture.ITALIC, 25));
+        car3.setX(carsTitleX);
+        car3.setY(400);
+        car3.setText("Car 3");
+        car3.setFill(Color.LIGHTCORAL);
+        childrenList.add(car3);
+        
+        velocity3 = new Text();
+        velocity3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        velocity3.setX(readingX);
+        velocity3.setY(400+carReadingsGap);
+        velocity3.setText("Speed:- ");
+        velocity3.setFill(Color.LIGHTCORAL);
+        childrenList.add(velocity3);
+        
+        velocityValue3= new Text("hello");
+        velocityValue3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        velocityValue3.setX(readingX+80);
+        velocityValue3.setY(400+carReadingsGap);
+        childrenList.add(velocityValue3);
+        
+        fuel3 = new Text();
+        fuel3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        fuel3.setX(readingX);
+        fuel3.setY(400+2*carReadingsGap);
+        fuel3.setText("Fuel:- ");
+        fuel3.setFill(Color.LIGHTCORAL);
+        childrenList.add(fuel3);
+        
+        fuelValue3= new Text("hello");
+        fuelValue3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        fuelValue3.setX(readingX+80);
+        fuelValue3.setY(400+2*carReadingsGap);
+        childrenList.add(fuelValue3);
+    }
+    
+  
+    
+    private final static String TOPIC = "car-data";
+    //ip:posrt of the server to which we connect 
+    private final static String BOOTSTRAP_SERVERS ="localhost:9092";
+    private static Consumer<Long, String> createConsumer() 
+    {
+      final Properties props = new Properties();
+      props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,BOOTSTRAP_SERVERS);
+      props.put(ConsumerConfig.GROUP_ID_CONFIG, "KafkaExampleConsumer");
+      props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,LongDeserializer.class.getName());
+      props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,StringDeserializer.class.getName());
+
+      // Create the consumer using props.
+      final Consumer<Long, String> consumer = new KafkaConsumer<>(props);
+      // Subscribe to the topic.
+      consumer.subscribe(Collections.singletonList(TOPIC));
+      return consumer;
+    }
+    
+    
+    public static void runConsumer() throws InterruptedException 
+    {
+        final Consumer<Long, String> consumer = createConsumer();
+        final int giveUp = 100;   int noRecordsCount = 0;
+        while (true) 
+        {
+            //poll => fetches the un committed records
+            final ConsumerRecords<Long, String> consumerRecords = consumer.poll(1000);
+            if (consumerRecords.count()==0) 
+            {
+                noRecordsCount++;
+                if (noRecordsCount > giveUp) 
+                    break;
+                else 
+                    continue;
+            }
+            
+            consumerRecords.forEach(record -> 
+            {
+                System.out.printf("Consumer Record:(%d, %s, %d, %d)\n",record.key(), record.value(),record.partition(), record.offset());
+                KafkaRecord kafkaRecord = getKafkaRecord(record.value());
+                System.out.println("KafkaRecord is "+ kafkaRecord);
+                updateUI(kafkaRecord);
+            });
+            
+            // to mark the list of received records before failure  ....so the next poll fetches the un committed records
+            consumer.commitAsync();
+        }
+        consumer.close();
+        System.out.println("DONE");
+    }
+    
+    
+    private static KafkaRecord getKafkaRecord(String value) 
+    {
+        Gson g = new Gson();
+        KafkaRecord kafkaRecord = g.fromJson(value, KafkaRecord.class);
+        return kafkaRecord;
+    }
+    
+    
+    private static void updateUI(KafkaRecord kafkaRecord) 
+    {
+        int tripID = kafkaRecord.getTrip_id();
+        //if tripID == trip3
+        if(tripID == 3)
+        {
+            System.out.println("UpdateUI: tripid is 3 ");  
+            velocityValue1.setText(Double.toString(kafkaRecord.getVelocity()));
+            
+            
+        }
+        //else if tripID == trip4
+        else if(tripID == 4)
+        {
+            System.out.println("UpdateUI: tripid is 3 ");  
+            velocityValue2.setText(Double.toString(kafkaRecord.getVelocity()));
+            
+            
+        }
+        //else tripID == trip5
+        else if(tripID == 5)
+        {
+            System.out.println("UpdateUI: tripid is 3 ");  
+            velocityValue3.setText(Double.toString(kafkaRecord.getVelocity()));
+            
+            
+        }
         
     }
+
+    
+    
 }
