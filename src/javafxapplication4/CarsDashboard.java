@@ -2,6 +2,14 @@
 package javafxapplication4;
 
 import com.google.gson.Gson;
+import com.lynden.gmapsfx.GoogleMapView;
+import com.lynden.gmapsfx.MapComponentInitializedListener;
+import com.lynden.gmapsfx.javascript.object.GoogleMap;
+import com.lynden.gmapsfx.javascript.object.LatLong;
+import com.lynden.gmapsfx.javascript.object.MapOptions;
+import com.lynden.gmapsfx.javascript.object.MapTypeIdEnum;
+import com.lynden.gmapsfx.javascript.object.Marker;
+import com.lynden.gmapsfx.javascript.object.MarkerOptions;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -28,8 +36,12 @@ import pojos.KafkaRecord;
 
 
 
-public class CarsDashboard extends Application 
+public class CarsDashboard extends Application implements MapComponentInitializedListener 
 {
+    //map
+    GoogleMapView mapView;
+    GoogleMap map;
+    
     //UI constants
     private static int carReadingsGap = 30;
     private static int readingX = 1030;
@@ -83,8 +95,8 @@ public class CarsDashboard extends Application
         //setting info must come after creating and initializing children list
         //because we are adding items to the children list and it shouldn't be null
         setLegend();
-        
-        
+        setMap();
+
         //create another thread that is responsible for getting records and updating UI
         ConsumerThread consumerThread = new ConsumerThread();
         consumerThread.start();
@@ -98,18 +110,39 @@ public class CarsDashboard extends Application
         primaryStage.show();   
     }
 
+    @Override
+    public void mapInitialized() {
+        //Set the initial properties of the map.
+        MapOptions mapOptions = new MapOptions();
+
+        mapOptions.center(new LatLong(47.6097, -122.3331))
+                .mapType(MapTypeIdEnum.ROADMAP)
+                .overviewMapControl(false)
+                .panControl(false)
+                .rotateControl(false)
+                .scaleControl(false)
+                .streetViewControl(false)
+                .zoomControl(false)
+                .zoom(12);
+
+        map = mapView.createMap(mapOptions);
+
+        //Add a marker to the map
+        MarkerOptions markerOptions = new MarkerOptions();
+
+        markerOptions.position( new LatLong(47.6, -122.3) )
+                    .visible(Boolean.TRUE)
+                    .title("My Marker");
+
+        Marker marker = new Marker( markerOptions );
+
+        map.addMarker(marker);
+
+    }
     
     public static void main(String[] args) 
     {
         launch(args);
-        try 
-        {
-            runConsumer();
-        } 
-        catch (InterruptedException ex) 
-        {
-            System.err.println("Cars Dashboard: error in running Consumer, error is "+ex);
-        }
     }
     
     private void setLegend() 
@@ -248,11 +281,18 @@ public class CarsDashboard extends Application
         childrenList.add(fuelValue3);
     }
     
-  
+    public void setMap()
+    {
+        mapView = new GoogleMapView();
+        mapView.addMapInializedListener(this);
+        childrenList.add(mapView);
+    }
+    
     
     private final static String TOPIC = "car-data";
     //ip:posrt of the server to which we connect 
     private final static String BOOTSTRAP_SERVERS ="localhost:9092";
+    
     private static Consumer<Long, String> createConsumer() 
     {
       final Properties props = new Properties();
@@ -324,7 +364,7 @@ public class CarsDashboard extends Application
         //else if tripID == trip4
         else if(tripID == 4)
         {
-            System.out.println("UpdateUI: tripid is 3 ");  
+            System.out.println("UpdateUI: tripid is 4 ");  
             velocityValue2.setText(Double.toString(kafkaRecord.getVelocity()));
             
             
@@ -332,7 +372,7 @@ public class CarsDashboard extends Application
         //else tripID == trip5
         else if(tripID == 5)
         {
-            System.out.println("UpdateUI: tripid is 3 ");  
+            System.out.println("UpdateUI: tripid is 5 ");  
             velocityValue3.setText(Double.toString(kafkaRecord.getVelocity()));
             
             
