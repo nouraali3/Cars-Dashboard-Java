@@ -23,6 +23,8 @@ public class ConsumerThread extends Thread {
         catch (InterruptedException ex) 
             {System.err.println("ConsumerThread: can't run consumer in Cars Dashboard, error is "+ex);}
     }
+    
+    
 
 
 }

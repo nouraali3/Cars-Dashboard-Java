@@ -15,6 +15,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -39,8 +40,8 @@ import pojos.KafkaRecord;
 public class CarsDashboard extends Application implements MapComponentInitializedListener 
 {
     //map
-    GoogleMapView mapView;
-    GoogleMap map;
+    private static GoogleMapView mapView;
+    private static GoogleMap map;
     
     //UI constants
     private static int carReadingsGap = 30;
@@ -128,15 +129,14 @@ public class CarsDashboard extends Application implements MapComponentInitialize
         map = mapView.createMap(mapOptions);
 
         //Add a marker to the map
-        MarkerOptions markerOptions = new MarkerOptions();
-
-        markerOptions.position( new LatLong(47.6, -122.3) )
-                    .visible(Boolean.TRUE)
-                    .title("My Marker");
-
-        Marker marker = new Marker( markerOptions );
-
-        map.addMarker(marker);
+//        MarkerOptions markerOptions = new MarkerOptions();
+//
+//        markerOptions.position( new LatLong(47.6, -122.3) )
+//                    .visible(Boolean.TRUE)
+//                    .title("My Marker");
+//
+//        Marker marker = new Marker( markerOptions );
+//        map.addMarker(marker);
 
     }
     
@@ -315,8 +315,8 @@ public class CarsDashboard extends Application implements MapComponentInitialize
         final int giveUp = 100;   int noRecordsCount = 0;
         while (true) 
         {
-            //poll => fetches the un committed records
-            final ConsumerRecords<Long, String> consumerRecords = consumer.poll(1000);
+            //poll => fetches the un committed records => wait for new uncommitted records for 5000 ms
+            final ConsumerRecords<Long, String> consumerRecords = consumer.poll(5000);
             if (consumerRecords.count()==0) 
             {
                 noRecordsCount++;
@@ -331,7 +331,16 @@ public class CarsDashboard extends Application implements MapComponentInitialize
                 System.out.printf("Consumer Record:(%d, %s, %d, %d)\n",record.key(), record.value(),record.partition(), record.offset());
                 KafkaRecord kafkaRecord = getKafkaRecord(record.value());
                 System.out.println("KafkaRecord is "+ kafkaRecord);
-                updateUI(kafkaRecord);
+                
+                // let the ui thread(javafx thread) itself not the consumer thread to update map 
+                Platform.runLater(new Runnable() 
+                {
+                    @Override public void run() 
+                    {
+                        updateUI(kafkaRecord);
+                    }
+                });
+                
             });
             
             // to mark the list of received records before failure  ....so the next poll fetches the un committed records
@@ -359,21 +368,52 @@ public class CarsDashboard extends Application implements MapComponentInitialize
             System.out.println("UpdateUI: tripid is 3 ");  
             velocityValue1.setText(Double.toString(kafkaRecord.getVelocity()));
             
+            MarkerOptions markerOptions = new MarkerOptions();
+
+            markerOptions.position( new LatLong(kafkaRecord.getLatitude(), kafkaRecord.getLongitude()) )
+                        .visible(Boolean.TRUE)
+                        .title("Car 1");
+
+            Marker marker = new Marker( markerOptions );
+
+            map.addMarker(marker);
+            
             
         }
         //else if tripID == trip4
         else if(tripID == 4)
         {
-            System.out.println("UpdateUI: tripid is 4 ");  
+            System.out.println("UpdateUI: tripid is 4 , lat = "+kafkaRecord.getLatitude()+" , long = "+kafkaRecord.getLongitude());  
             velocityValue2.setText(Double.toString(kafkaRecord.getVelocity()));
+            MarkerOptions markerOptions = new MarkerOptions();
+
+            markerOptions.position( new LatLong(kafkaRecord.getLatitude(), kafkaRecord.getLongitude()) )
+                        .visible(Boolean.TRUE)
+                        .title("Car 2");
             
+//            markerOptions.position( new LatLong(47.6, -122.3) )
+//                       .visible(Boolean.TRUE)
+//                       .title("Car 2");
+
+            Marker marker = new Marker( markerOptions );
+
+            map.addMarker(marker);
             
         }
         //else tripID == trip5
         else if(tripID == 5)
         {
-            System.out.println("UpdateUI: tripid is 5 ");  
+            System.out.println("UpdateUI: tripid is 5 , latitude is "+kafkaRecord.getLatitude()+" , longitude is "+kafkaRecord.getLongitude());  
             velocityValue3.setText(Double.toString(kafkaRecord.getVelocity()));
+            MarkerOptions markerOptions = new MarkerOptions();
+                
+            markerOptions.position( new LatLong(kafkaRecord.getLatitude(), kafkaRecord.getLongitude()) )
+                        .visible(Boolean.TRUE)
+                        .title("Car 3");
+
+            Marker marker = new Marker( markerOptions );
+
+            map.addMarker(marker);
             
             
         }
