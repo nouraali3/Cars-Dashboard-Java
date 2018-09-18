@@ -4,6 +4,9 @@ package pojos;
 
 public class KafkaRecord 
 {
+    
+    int record_number;
+    int position_id;
     int trip_id;
     int beaglebone_id;
     double latitude;
@@ -11,6 +14,22 @@ public class KafkaRecord
     double altitude;
     double velocity;
 
+    public int getRecord_number() {
+        return record_number;
+    }
+
+    public void setRecord_number(int record_number) {
+        this.record_number = record_number;
+    }
+
+    public int getPosition_id() {
+        return position_id;
+    }
+
+    public void setPosition_id(int position_id) {
+        this.position_id = position_id;
+    }
+    
     public int getTrip_id() {
         return trip_id;
     }
