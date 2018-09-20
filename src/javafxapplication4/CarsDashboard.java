@@ -12,8 +12,6 @@ import com.lynden.gmapsfx.javascript.object.Marker;
 import com.lynden.gmapsfx.javascript.object.MarkerOptions;
 import java.util.Collections;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -45,37 +43,57 @@ public class CarsDashboard extends Application implements MapComponentInitialize
     
     //UI constants
     private static int carReadingsGap = 30;
-    private static int readingX = 1030;
-    private static int betCarsGap = 50;  
-    private static int carsTitleX = 1020;
+    private static int betCarsGap = 50;
+    private static int legendX = 800;
+    private static int carsTitleX = legendX+10;
+    private static int readingX = carsTitleX+5;
     
+    
+    //icons paths
+    private String carIconPath1 = "icons8-fiat-500-60.png";
+    private String carIconPath2 = "icons8-sedan-40.png";
+    private String carIconPath3 = "icons8-sedan-64.png";
+            
     ObservableList childrenList;
    
     //legend
     Line line;
+    Line line2;
     Text cars;
     
     //car1 Fields
     Text car1;
-    Text velocity1;
+    Text speed1;
+    Text rpm1;
     Text fuel1;
-    private static Text velocityValue1;
+    private static Text speedValue1;
+    private static Text rpmValue1;
     private static Text fuelValue1;
+    
     
     //car2 fields
     Text car2;
-    Text velocity2;
+    Text speed2;
+    Text rpm2;
     Text fuel2;
-    private static Text velocityValue2;
+    private static Text speedValue2;
+    private static Text rpmValue2;
     private static Text fuelValue2;
+    
     
     //car3 fields
     Text car3;
-    Text velocity3;
+    Text speed3;
+    Text rpm3;
     Text fuel3;
-    private static Text velocityValue3;
+    private static Text speedValue3;
+    private static Text rpmValue3;
     private static Text fuelValue3;
     
+    public static void main(String[] args) 
+    {
+        launch(args);
+    }
     
     @Override
     //called once
@@ -103,7 +121,7 @@ public class CarsDashboard extends Application implements MapComponentInitialize
         consumerThread.start();
         
         //3-
-        Scene scene = new Scene(root,1200,700);
+        Scene scene = new Scene(root,1050,600);
         
         //4-
         primaryStage.setTitle("Cars Dashboard"); 
@@ -111,6 +129,13 @@ public class CarsDashboard extends Application implements MapComponentInitialize
         primaryStage.show();   
     }
 
+    public void setMap()
+    {
+        mapView = new GoogleMapView();
+        mapView.addMapInializedListener(this);
+        childrenList.add(mapView);
+    }
+    
     @Override
     public void mapInitialized() {
         //Set the initial properties of the map.
@@ -124,28 +149,39 @@ public class CarsDashboard extends Application implements MapComponentInitialize
                 .scaleControl(false)
                 .streetViewControl(false)
                 .zoomControl(false)
-                .zoom(12);
+                .zoom(4);
 
         map = mapView.createMap(mapOptions);
+        
+        MarkerOptions markerOptions = new MarkerOptions();
+//        markerOptions.position( new LatLong(43,21) ).icon(carIconPath1).visible(Boolean.TRUE).title("Car 1");
+        markerOptions.position( new LatLong(47,-122) ).visible(Boolean.TRUE).title("Car 1");
+        Marker marker = new Marker( markerOptions );
+        map.addMarker(marker);
+        
     }
     
-    public static void main(String[] args) 
-    {
-        launch(args);
-    }
+    
     
     private void setLegend() 
     {
         line = new Line();
-        line.setStartX(1000.0);
-        line.setEndX(1000.0); 
+        line.setStartX(legendX+1);
+        line.setEndX(legendX+1); 
         line.setStartY(0.0); 
-        line.setEndY(700.0);
+        line.setEndY(600.0);
         childrenList.add(line);
+        
+        line2 = new Line();
+        line2.setStartX(legendX+1);
+        line2.setEndX(1050); 
+        line2.setStartY(35); 
+        line2.setEndY(35);
+        childrenList.add(line2);
         
         cars = new Text();
         cars.setFont(Font.font("times new roman",FontWeight.BOLD, FontPosture.ITALIC, 30));
-        cars.setX(1010);
+        cars.setX(legendX+5);
         cars.setY(30);
         cars.setText("Cars");
         childrenList.add(cars);
@@ -159,123 +195,167 @@ public class CarsDashboard extends Application implements MapComponentInitialize
     private void setCarInfo1()
     {
         car1 = new Text();
-        car1.setFont(Font.font("times new roman",FontWeight.BOLD, FontPosture.ITALIC, 25));
+        car1.setFont(Font.font("times new roman", FontPosture.ITALIC, 25));
         car1.setX(carsTitleX);
         car1.setY(100);
         car1.setText("Car 1");
         childrenList.add(car1);
         
-        velocity1 = new Text();
-        velocity1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
-        velocity1.setX(readingX);
-        velocity1.setY(100+carReadingsGap);
-        velocity1.setText("Speed:- ");
-        childrenList.add(velocity1);
+        speed1 = new Text();
+        speed1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        speed1.setX(readingX);
+        speed1.setY(100+carReadingsGap);
+        speed1.setText("Speed:- ");
+        childrenList.add(speed1);
         
-        velocityValue1= new Text("hello");
-        velocityValue1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
-        velocityValue1.setX(readingX+80);
-        velocityValue1.setY(100+carReadingsGap);
-        childrenList.add(velocityValue1);
+        speedValue1= new Text("not available");
+        speedValue1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        speedValue1.setX(readingX+80);
+        speedValue1.setY(100+carReadingsGap);
+        childrenList.add(speedValue1);
+        
+        rpm1 = new Text();
+        rpm1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        rpm1.setX(readingX);
+        rpm1.setY(100+2*carReadingsGap);
+        rpm1.setText("RPM:- ");
+        childrenList.add(rpm1);
+        
+        rpmValue1 = new Text("not available");
+        rpmValue1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        rpmValue1.setX(readingX+80);
+        rpmValue1.setY(100+2*carReadingsGap);
+        childrenList.add(rpmValue1);
         
         fuel1 = new Text();
         fuel1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
         fuel1.setX(readingX);
-        fuel1.setY(100+2*carReadingsGap);
+        fuel1.setY(100+3*carReadingsGap);
         fuel1.setText("Fuel:- ");
         childrenList.add(fuel1);
         
-        fuelValue1 = new Text("hello");
+        fuelValue1 = new Text("not available");
         fuelValue1.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
         fuelValue1.setX(readingX+80);
-        fuelValue1.setY(100+2*carReadingsGap);
+        fuelValue1.setY(100+3*carReadingsGap);
         childrenList.add(fuelValue1);
+        
+        
     }
     
     private void setCarInfo2()
     {
         car2 = new Text();
-        car2.setFont(Font.font("times new roman",FontWeight.BOLD, FontPosture.ITALIC, 25));
+        car2.setFont(Font.font("times new roman", FontPosture.ITALIC, 25));
         car2.setX(carsTitleX);
         car2.setY(250);
         car2.setText("Car 2");
         car2.setFill(Color.LIGHTBLUE);
         childrenList.add(car2);
         
-        velocity2 = new Text();
-        velocity2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
-        velocity2.setX(readingX);
-        velocity2.setY(250+carReadingsGap);
-        velocity2.setText("Speed:- ");
-        velocity2.setFill(Color.LIGHTBLUE);        
-        childrenList.add(velocity2);
+        speed2 = new Text();
+        speed2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        speed2.setX(readingX);
+        speed2.setY(250+carReadingsGap);
+        speed2.setText("Speed:- ");
+        speed2.setFill(Color.LIGHTBLUE);        
+        childrenList.add(speed2);
         
-        velocityValue2= new Text("hello");
-        velocityValue2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
-        velocityValue2.setX(readingX+80);
-        velocityValue2.setY(250+carReadingsGap);
-        childrenList.add(velocityValue2);
+        speedValue2= new Text("not available");
+        speedValue2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        speedValue2.setX(readingX+80);
+        speedValue2.setY(250+carReadingsGap);
+        speedValue2.setFill(Color.LIGHTBLUE);
+        childrenList.add(speedValue2);
+        
+        rpm2 = new Text();
+        rpm2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        rpm2.setX(readingX);
+        rpm2.setY(250+2*carReadingsGap);
+        rpm2.setText("RPM:- ");
+        rpm2.setFill(Color.LIGHTBLUE);
+        childrenList.add(rpm2);
+        
+        rpmValue2= new Text("not available");
+        rpmValue2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        rpmValue2.setX(readingX+80);
+        rpmValue2.setY(250+2*carReadingsGap);
+        rpmValue2.setFill(Color.LIGHTBLUE);
+        childrenList.add(rpmValue2);
         
         fuel2 = new Text();
         fuel2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
         fuel2.setX(readingX);
-        fuel2.setY(250+2*carReadingsGap);
+        fuel2.setY(250+3*carReadingsGap);
         fuel2.setText("Fuel:- ");
         fuel2.setFill(Color.LIGHTBLUE);
         childrenList.add(fuel2);
         
-        fuelValue2= new Text("hello");
+        fuelValue2= new Text("not available");
         fuelValue2.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
         fuelValue2.setX(readingX+80);
-        fuelValue2.setY(250+2*carReadingsGap);
+        fuelValue2.setY(250+3*carReadingsGap);
+        fuelValue2.setFill(Color.LIGHTBLUE);
         childrenList.add(fuelValue2);
     }
     
     private void setCarInfo3()
     {
         car3 = new Text();
-        car3.setFont(Font.font("times new roman",FontWeight.BOLD, FontPosture.ITALIC, 25));
+        car3.setFont(Font.font("times new roman", FontPosture.ITALIC, 25));
         car3.setX(carsTitleX);
         car3.setY(400);
         car3.setText("Car 3");
         car3.setFill(Color.LIGHTCORAL);
         childrenList.add(car3);
         
-        velocity3 = new Text();
-        velocity3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
-        velocity3.setX(readingX);
-        velocity3.setY(400+carReadingsGap);
-        velocity3.setText("Speed:- ");
-        velocity3.setFill(Color.LIGHTCORAL);
-        childrenList.add(velocity3);
+        speed3 = new Text();
+        speed3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        speed3.setX(readingX);
+        speed3.setY(400+carReadingsGap);
+        speed3.setText("Speed:- ");
+        speed3.setFill(Color.LIGHTCORAL);
+        childrenList.add(speed3);
         
-        velocityValue3= new Text("hello");
-        velocityValue3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
-        velocityValue3.setX(readingX+80);
-        velocityValue3.setY(400+carReadingsGap);
-        childrenList.add(velocityValue3);
+        speedValue3 = new Text("not available");
+        speedValue3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        speedValue3.setX(readingX+80);
+        speedValue3.setY(400+carReadingsGap);
+        speedValue3.setFill(Color.LIGHTCORAL);
+        childrenList.add(speedValue3);
+        
+        rpm3 = new Text();
+        rpm3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        rpm3.setX(readingX);
+        rpm3.setY(400+2*carReadingsGap);
+        rpm3.setText("RPM:- ");
+        rpm3.setFill(Color.LIGHTCORAL);
+        childrenList.add(rpm3);
+        
+        rpmValue3= new Text("not available");
+        rpmValue3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
+        rpmValue3.setX(readingX+80);
+        rpmValue3.setY(400+2*carReadingsGap);
+        rpmValue3.setFill(Color.LIGHTCORAL);
+        childrenList.add(rpmValue3);
         
         fuel3 = new Text();
         fuel3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
         fuel3.setX(readingX);
-        fuel3.setY(400+2*carReadingsGap);
+        fuel3.setY(400+3*carReadingsGap);
         fuel3.setText("Fuel:- ");
         fuel3.setFill(Color.LIGHTCORAL);
         childrenList.add(fuel3);
         
-        fuelValue3= new Text("hello");
+        fuelValue3= new Text("not available");
         fuelValue3.setFont(Font.font("times new roman", FontPosture.ITALIC, 20));
         fuelValue3.setX(readingX+80);
-        fuelValue3.setY(400+2*carReadingsGap);
+        fuelValue3.setY(400+3*carReadingsGap);
+        fuelValue3.setFill(Color.LIGHTCORAL);
         childrenList.add(fuelValue3);
     }
     
-    public void setMap()
-    {
-        mapView = new GoogleMapView();
-        mapView.addMapInializedListener(this);
-        childrenList.add(mapView);
-    }
+
     
     
     private final static String TOPIC = "car-data";
@@ -317,7 +397,6 @@ public class CarsDashboard extends Application implements MapComponentInitialize
             
             consumerRecords.forEach(record -> 
             {
-                System.out.printf("Consumer Record:(%d, %s, %d, %d)\n",record.key(), record.value(),record.partition(), record.offset());
                 KafkaRecord kafkaRecord = getKafkaRecord(record.value());
                 System.out.println("KafkaRecord is "+ kafkaRecord);
                 
@@ -351,64 +430,71 @@ public class CarsDashboard extends Application implements MapComponentInitialize
     private static void updateUI(KafkaRecord kafkaRecord) 
     {
         int tripID = kafkaRecord.getTrip_id();
-        //if tripID == trip3
-        if(tripID == 3)
+        switch (tripID) 
         {
-            System.out.println("UpdateUI: tripid is 3 ");  
-            velocityValue1.setText(Double.toString(kafkaRecord.getVelocity()));
-            
-            MarkerOptions markerOptions = new MarkerOptions();
-
-            markerOptions.position( new LatLong(kafkaRecord.getLatitude(), kafkaRecord.getLongitude()) )
-                        .visible(Boolean.TRUE)
-                        .title("Car 1");
-
-            Marker marker = new Marker( markerOptions );
-
-            map.addMarker(marker);
-            
-            
-        }
-        //else if tripID == trip4
-        else if(tripID == 4)
-        {
-            System.out.println("UpdateUI: tripid is 4 , lat = "+kafkaRecord.getLatitude()+" , long = "+kafkaRecord.getLongitude());  
-            velocityValue2.setText(Double.toString(kafkaRecord.getVelocity()));
-            MarkerOptions markerOptions = new MarkerOptions();
-
-            markerOptions.position( new LatLong(kafkaRecord.getLatitude(), kafkaRecord.getLongitude()) )
-                        .visible(Boolean.TRUE)
-                        .title("Car 2");
-            
-//            markerOptions.position( new LatLong(47.6, -122.3) )
-//                       .visible(Boolean.TRUE)
-//                       .title("Car 2");
-
-            Marker marker = new Marker( markerOptions );
-
-            map.addMarker(marker);
-            
-        }
-        //else tripID == trip5
-        else if(tripID == 5)
-        {
-            System.out.println("UpdateUI: tripid is 5 , latitude is "+kafkaRecord.getLatitude()+" , longitude is "+kafkaRecord.getLongitude());  
-            velocityValue3.setText(Double.toString(kafkaRecord.getVelocity()));
-            MarkerOptions markerOptions = new MarkerOptions();
-                
-            markerOptions.position( new LatLong(kafkaRecord.getLatitude(), kafkaRecord.getLongitude()) )
-                        .visible(Boolean.TRUE)
-                        .title("Car 3");
-
-            Marker marker = new Marker( markerOptions );
-
-            map.addMarker(marker);
-            
-            
+            case 3:
+            {
+                System.out.println("UpdateUI: tripid is 3 ");
+                updateCarInfo1(kafkaRecord);
+                break;
+            }
+            case 4:
+            {
+                System.out.println("UpdateUI: tripid is 4" );
+                updateCarInfo2(kafkaRecord);
+                break;
+            }
+            case 5:
+            {
+                System.out.println("UpdateUI: tripid is 5");
+                updateCarInfo3(kafkaRecord);
+                break;
+            }
+            default:
+                break;
         }
         
     }
 
+    private static void updateCarInfo1(KafkaRecord kafkaRecord)
+    {
+        speedValue1.setText(Double.toString(kafkaRecord.getSpeed()));
+        rpmValue1.setText(Double.toString(kafkaRecord.getRpm()));
+        fuelValue1.setText(Double.toString(kafkaRecord.getFuel())+"%");
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position( new LatLong(kafkaRecord.getLatitude(), kafkaRecord.getLongitude()) )
+                .visible(Boolean.TRUE)
+                .title("Car 1");
+        Marker marker = new Marker( markerOptions );
+        map.addMarker(marker);
+    }
     
+    private static void updateCarInfo2(KafkaRecord kafkaRecord)
+    {
+        speedValue2.setText(Double.toString(kafkaRecord.getSpeed()));
+        rpmValue2.setText(Double.toString(kafkaRecord.getRpm()));
+        fuelValue2.setText(Double.toString(kafkaRecord.getFuel())+"%");
+
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position( new LatLong(kafkaRecord.getLatitude(), kafkaRecord.getLongitude()) )
+                .visible(Boolean.TRUE)
+                .title("Car 2");
+        Marker marker = new Marker( markerOptions );
+        map.addMarker(marker);
+    }
+    
+    private static void updateCarInfo3(KafkaRecord kafkaRecord)
+    {
+        speedValue3.setText(Double.toString(kafkaRecord.getSpeed()));
+        rpmValue3.setText(Double.toString(kafkaRecord.getRpm()));
+        fuelValue3.setText(Double.toString(kafkaRecord.getFuel())+"%");
+        
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position( new LatLong(kafkaRecord.getLatitude(), kafkaRecord.getLongitude()) )
+                .visible(Boolean.TRUE)
+                .title("Car 3");
+        Marker marker = new Marker( markerOptions );
+        map.addMarker(marker);
+    }
     
 }

@@ -4,15 +4,17 @@ package pojos;
 
 public class KafkaRecord 
 {
-    
+    int trip_id;
     int record_number;
     int position_id;
-    int trip_id;
-    int beaglebone_id;
     double latitude;
     double longitude;
     double altitude;
-    double velocity;
+    double speed;
+    double rpm;
+    double fuel;
+    
+    
 
     public int getRecord_number() {
         return record_number;
@@ -36,15 +38,7 @@ public class KafkaRecord
 
     public void setTrip_id(int trip_id) {
         this.trip_id = trip_id;
-    }
-
-    public int getBeaglebone_id() {
-        return beaglebone_id;
-    }
-
-    public void setBeaglebone_id(int beaglebone_id) {
-        this.beaglebone_id = beaglebone_id;
-    }
+    }    
 
     public double getLatitude() {
         return latitude;
@@ -70,18 +64,38 @@ public class KafkaRecord
         this.altitude = altitude;
     }
 
-    public double getVelocity() {
-        return velocity;
+    public double getSpeed() {
+        return speed;
     }
 
-    public void setVelocity(double velocity) {
-        this.velocity = velocity;
+    public void setSpeed(double speed) {
+        this.speed = speed;
+    }
+
+    public double getRpm() {
+        return rpm;
+    }
+
+    public void setRpm(double rpm) {
+        this.rpm = rpm;
+    }
+
+    public double getFuel() {
+        return fuel;
+    }
+
+    public void setFuel(double fuel) {
+        this.fuel = fuel;
     }
 
     @Override
     public String toString() {
-        return "KafkaRecord{" + "trip_id=" + trip_id + ", beaglebone_id=" + beaglebone_id + ", latitude=" + latitude + ", longitude=" + longitude + ", altitude=" + altitude + ", velocity=" + velocity + '}';
+        return "KafkaRecord{" + "trip_id=" + trip_id + ", record_number=" + record_number + ", position_id=" + position_id + ", latitude=" + latitude + ", longitude=" + longitude + ", altitude=" + altitude + ", speed=" + speed + ", rpm=" + rpm + ", fuel=" + fuel + '}';
     }
+
+    
+    
+    
     
     
     
